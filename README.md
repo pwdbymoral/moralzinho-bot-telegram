@@ -5,6 +5,9 @@ Responde `corno eh tu` quando alguém envia uma mensagem contendo a palavra
 
 No grupo, use `/d20` para rolar um dado de 20 lados.
 
+O container inclui um healthcheck Docker reconhecido pelo Coolify. Ele acompanha
+as consultas bem-sucedidas ao Telegram e não depende de porta ou endpoint HTTP.
+
 ## Iniciar
 
 1. Crie o bot pelo [@BotFather](https://t.me/BotFather), usando `/newbot`, e copie o token.

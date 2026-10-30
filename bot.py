@@ -11,6 +11,15 @@ from urllib.request import Request, urlopen
 
 CORNO = re.compile(r"\bcorno\b", re.IGNORECASE)
 D20_COMMAND = re.compile(r"^/d20(?:@[A-Za-z0-9_]+)?(?:\s|$)", re.IGNORECASE)
+HEARTBEAT_FILE = "/tmp/telegram-bot-last-poll"
+HEARTBEAT_MAX_AGE = 90
+
+
+def is_healthy():
+    try:
+        return time.time() - os.path.getmtime(HEARTBEAT_FILE) < HEARTBEAT_MAX_AGE
+    except OSError:
+        return False
 
 
 def telegram(token, method, **params):
@@ -40,6 +49,8 @@ def main():
             if offset is not None:
                 params["offset"] = offset
             updates = telegram(token, "getUpdates", **params)
+            with open(HEARTBEAT_FILE, "a", encoding="utf-8"):
+                os.utime(HEARTBEAT_FILE, None)
         except (HTTPError, URLError, TimeoutError, RuntimeError) as error:
             print(str(error).replace(token, "[token oculto]"), file=sys.stderr)
             time.sleep(3)
@@ -73,4 +84,6 @@ def main():
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["--healthcheck"]:
+        sys.exit(0 if is_healthy() else 1)
     main()
