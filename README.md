@@ -39,8 +39,9 @@ Cada pessoa escolhe um arquétipo com `/entrar guerreiro`, `/entrar ladino`,
 `/entrar mago`, `/entrar curandeiro`, `/entrar atirador` ou `/entrar tanque`.
 O Ollama inventa o nome e o conceito do personagem; vida e bônus são sorteados
 pelas regras do bot. A regra autoral combina teste de d20, classes e vida com
-um marcador de progresso coletivo: seis sucessos completam o objetivo. Falhas
-causam dano; a campanha acaba se o grupo cumprir o objetivo ou todo mundo morrer.
+um marcador de progresso coletivo: sucesso dá um ponto, e um 20 natural dá dois;
+seis pontos completam o objetivo. Falhas causam dano; a campanha acaba se o
+grupo cumprir o objetivo ou todo mundo morrer.
 
 Durante a partida, `/acao <ação>` resolve um teste e chama o Ollama para narrar
 o resultado. O mestre usa português informal no estilo do bot. A IA não decide
