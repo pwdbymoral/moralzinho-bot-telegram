@@ -16,14 +16,14 @@ DICE_EXPRESSION = re.compile(
 COMMAND = re.compile(r"^/([a-z0-9_]+)(?:@[a-z0-9_]+)?(?:\s+(.*))?$", re.IGNORECASE | re.DOTALL)
 DEFAULT_REPLIES = {"corno": "corno eh tu"}
 BALL_ANSWERS = (
-    "Com certeza.",
-    "É provável.",
-    "As chances são boas.",
-    "Sem dúvida.",
-    "Não conte com isso.",
-    "Minha resposta é não.",
-    "Melhor perguntar de novo.",
-    "Não consigo prever agora.",
+    "acho q sim",
+    "vai dar bom",
+    "duvido nada",
+    "com certeza, chefe",
+    "ih, aí complica",
+    "acho q não, viu",
+    "sei não kkkkk",
+    "pergunta dnv q agr buguei",
 )
 BOT_COMMANDS = [
     {"command": "start", "description": "Começar a usar o bot"},
@@ -35,14 +35,14 @@ BOT_COMMANDS = [
     {"command": "escolher", "description": "Escolher entre opções"},
 ]
 HELP_TEXT = (
-    "Fala pai! Eu faço umas rolagens e respondo umas coisas:\n\n"
+    "fala pai, eu faço essas aqui:\n\n"
     "/d20 — rola um d20\n"
-    "/d20 vantagem ou /d20 desvantagem — rola com vantagem/desvantagem\n"
-    "/rolar 2d6+3 — rola dados de RPG (até 20 dados)\n"
+    "/d20 vantagem ou /d20 desvantagem — rola dois e fica com um\n"
+    "/rolar 2d6+3 — rola dados de RPG\n"
     "/moeda — cara ou coroa\n"
     "/8ball pergunta — resposta da bola 8\n"
     "/escolher pizza | hambúrguer — escolhe uma opção\n\n"
-    "E se alguém falar corno, eu respondo."
+    "e se alguém falar corno, tu já sabe."
 )
 
 
@@ -83,24 +83,27 @@ def roll_d20(mode=""):
     mode = mode.casefold().strip()
     if mode in {"", "normal"}:
         result = secrets.randbelow(20) + 1
-        note = " (20 natural!)" if result == 20 else " (1 natural!)" if result == 1 else ""
-        return f"🎲 d20: {result}{note}"
+        if result == 20:
+            return "🎲 saiu 20, aí eh mt foda"
+        if result == 1:
+            return "🎲 deu 1, aí eh foda"
+        return f"🎲 saiu {result}/20"
 
     if mode in {"vantagem", "adv", "vantage"}:
         values = [secrets.randbelow(20) + 1 for _ in range(2)]
-        return f"🎲 d20 com vantagem: [{values[0]}, {values[1]}] → {max(values)}"
+        return f"🎲 vantagem: [{values[0]}, {values[1]}] — fica {max(values)}"
 
     if mode in {"desvantagem", "dis", "disadvantage"}:
         values = [secrets.randbelow(20) + 1 for _ in range(2)]
-        return f"🎲 d20 com desvantagem: [{values[0]}, {values[1]}] → {min(values)}"
+        return f"🎲 desvantagem: [{values[0]}, {values[1]}] — fica {min(values)}"
 
-    return "Uso: /d20, /d20 vantagem ou /d20 desvantagem."
+    return "uso: /d20, /d20 vantagem ou /d20 desvantagem."
 
 
 def roll_dice(expression):
     match = DICE_EXPRESSION.fullmatch(expression.strip())
     if not match:
-        return "Formato: /rolar 2d6+3 (ou /rolar d20)."
+        return "formato: /rolar 2d6+3 (ou /rolar d20)."
 
     count = int(match.group("count") or "1")
     sides = int(match.group("sides"))
@@ -110,7 +113,7 @@ def roll_dice(expression):
         modifier = -modifier
 
     if not 1 <= count <= 20 or not 2 <= sides <= 1000 or abs(modifier) > 10000:
-        return "Limites: 1–20 dados, 2–1000 lados e modificador até 10000."
+        return "limites: 1–20 dados, 2–1000 lados e modificador até 10000."
 
     values = [secrets.randbelow(sides) + 1 for _ in range(count)]
     total = sum(values) + modifier
@@ -137,14 +140,14 @@ def reply_to(text, custom_replies):
         if command == "rolar":
             return roll_dice(arguments)
         if command == "moeda":
-            return f"🪙 {secrets.choice(('Cara', 'Coroa'))}!"
+            return f"🪙 deu {secrets.choice(('cara', 'coroa'))}, chefe"
         if command == "8ball":
             return f"🎱 {secrets.choice(BALL_ANSWERS)}"
         if command == "escolher":
             options = [option.strip() for option in arguments.split("|") if option.strip()]
             if len(options) < 2:
-                return "Uso: /escolher opção 1 | opção 2 (ou mais opções)."
-            return f"🎯 Escolhi: {secrets.choice(options)}"
+                return "uso: /escolher opção 1 | opção 2 (ou mais opções)."
+            return f"🎯 foi de {secrets.choice(options)}, chefe"
         return None
 
     for pattern, response in custom_replies:

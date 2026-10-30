@@ -12,6 +12,9 @@ No grupo, o bot oferece estes comandos:
 - `/escolher pizza | hambúrguer` para sortear uma opção
 - `/ajuda` para ver a lista no Telegram
 
+As respostas seguem um tom curto e informal, com abreviações parecidas com as
+suas mensagens.
+
 No Coolify, configure `CUSTOM_REPLIES_JSON` como variável de runtime para
 personalizar palavras e respostas. Exemplo: `{"corno":"corno eh tu","bom dia":"Bom dia, tropa!"}`.
 O gatilho é procurado como palavra ou frase inteira, sem diferenciar maiúsculas.
