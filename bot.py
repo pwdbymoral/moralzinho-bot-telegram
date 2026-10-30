@@ -42,7 +42,7 @@ ARCHETYPES = {
 CAMPAIGN_OBJECTIVES = {
     "fantasia": ("recuperar um artefato antes que ele caia nas mãos erradas", "escapar de uma cidade tomada por uma maldição"),
     "terror": ("sobreviver até o amanhecer dentro de um lugar abandonado", "descobrir o que está chamando vocês pelo rádio"),
-    "sci-fi": ("consertar a nave antes que o oxigênio acabe", "impedir que uma IA assuma o controle da estação"),
+    "ficção científica": ("consertar a nave antes que o oxigênio acabe", "impedir que uma IA assuma o controle da estação"),
     "apocalipse": ("levar o grupo até uma zona segura", "buscar remédios antes que a base fique sem estoque"),
     "mistério": ("descobrir quem sabotou a expedição", "encontrar a pessoa desaparecida antes da próxima noite"),
 }
@@ -222,14 +222,16 @@ def load_campaigns(path):
 
 
 def save_campaigns(state, path):
-    folder = os.path.dirname(os.path.abspath(path))
-    os.makedirs(folder, exist_ok=True)
     temporary_path = f"{path}.tmp"
-    with open(temporary_path, "w", encoding="utf-8") as state_file:
-        json.dump(state, state_file, ensure_ascii=False, separators=(",", ":"))
-        state_file.flush()
-        os.fsync(state_file.fileno())
-    os.replace(temporary_path, path)
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(temporary_path, "w", encoding="utf-8") as state_file:
+            json.dump(state, state_file, ensure_ascii=False, separators=(",", ":"))
+            state_file.flush()
+            os.fsync(state_file.fileno())
+        os.replace(temporary_path, path)
+    except OSError as error:
+        print(f"Não consegui salvar estado das campanhas: {error}", file=sys.stderr)
 
 
 def ollama_chat(system_prompt, user_prompt, max_tokens=100):
@@ -337,15 +339,14 @@ def campaign_reply(message, state, path):
 
     campaign = state["chats"].get(chat_id)
     if command == "campanha":
-        if campaign:
+        if campaign and campaign["status"] in {"lobby", "active"}:
             return "já tem uma campanha nesse grupo, chefe. Manda /status pra ver como tá ou /fim se tu abriu ela."
         parts = [part.strip() for part in arguments.split("|", 1)]
         genre_key = normalize_label(parts[0]) if parts and parts[0] else "fantasia"
         genre = GENRES.get(genre_key)
         if not genre:
             return "tipos: fantasia, terror, sci-fi, apocalipse ou mistério. Ex: /campanha fantasia | recuperar o artefato"
-        genre_id = normalize_label(genre).replace("ficcao cientifica", "sci-fi")
-        objective = parts[1] if len(parts) > 1 and parts[1] else secrets.choice(CAMPAIGN_OBJECTIVES[genre_id])
+        objective = parts[1] if len(parts) > 1 and parts[1] else secrets.choice(CAMPAIGN_OBJECTIVES[genre])
         objective = objective[:180]
         now = time.time()
         state["chats"][chat_id] = {
@@ -408,6 +409,8 @@ def campaign_reply(message, state, path):
         save_campaigns(state, path)
         return f"{sender_name} entrou de {archetype['name']}! 🎭\n{character}\n❤️ {character_hp} HP | bônus +{archetype['bonus']} no d20\nManda /acao <o que tu faz> quando a campanha começar."
 
+    if campaign["status"] in {"vitória", "derrota"}:
+        return "essa campanha já acabou, pai. abre outra com /campanha."
     if campaign["status"] != "active":
         seconds = max(0, math.ceil(campaign["lobby_ends_at"] - time.time()))
         return f"a campanha começa quando fechar a inscrição, pai. faltam {seconds}s; dá pra entrar com /entrar <classe>."
