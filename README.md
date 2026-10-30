@@ -3,6 +3,8 @@
 Responde `corno eh tu` quando alguém envia uma mensagem contendo a palavra
 “corno”, sem diferenciar maiúsculas de minúsculas.
 
+No grupo, use `/d20` para rolar um dado de 20 lados.
+
 ## Iniciar
 
 1. Crie o bot pelo [@BotFather](https://t.me/BotFather), usando `/newbot`, e copie o token.

@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import secrets
 import sys
 import time
 from urllib.error import HTTPError, URLError
@@ -9,6 +10,7 @@ from urllib.request import Request, urlopen
 
 
 CORNO = re.compile(r"\bcorno\b", re.IGNORECASE)
+D20_COMMAND = re.compile(r"^/d20(?:@[A-Za-z0-9_]+)?(?:\s|$)", re.IGNORECASE)
 
 
 def telegram(token, method, **params):
@@ -48,7 +50,14 @@ def main():
             message = update.get("message", {})
             text = message.get("text") or message.get("caption", "")
 
-            if (message.get("from") or {}).get("is_bot") or not CORNO.search(text):
+            if (message.get("from") or {}).get("is_bot"):
+                continue
+
+            if D20_COMMAND.match(text):
+                reply = f"🎲 Rolagem de d20: {secrets.randbelow(20) + 1}/20"
+            elif CORNO.search(text):
+                reply = "corno eh tu"
+            else:
                 continue
 
             try:
@@ -56,7 +65,7 @@ def main():
                     token,
                     "sendMessage",
                     chat_id=message["chat"]["id"],
-                    text="corno eh tu",
+                    text=reply,
                     reply_parameters=json.dumps({"message_id": message["message_id"]}),
                 )
             except (HTTPError, URLError, TimeoutError, RuntimeError) as error:
